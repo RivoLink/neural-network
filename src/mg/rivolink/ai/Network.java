@@ -27,9 +27,27 @@ public class Network{
 		training(target);
 	}
 
-	public void train(float[] inputs,int[] target){
+	public void train(float... inputs,int[] target){
 		setInput(inputs);
 		training(target);
+	}
+	
+	public void train(int[] bitsArray,int[][] ytrains,int epochs){
+		int size=Math.min(bitsArray.length,ytrains.length);
+		for(int epoch=0;epoch<epochs;epoch++){
+			for(int i=0;i<size;i++){
+				this.train(bitsArray[i],ytrains[i]);
+			}
+		}
+	}
+	
+	public void train(float[][] xtrains,int[][] ytrains,int epochs){
+		int size=Math.min(xtrains.length,ytrains.length);
+		for(int epoch=0;epoch<epochs;epoch++){
+			for(int i=0;i<size;i++){
+				this.train(xtrains[i],ytrains[i]);
+			}
+		}
 	}
 
 	private Network setInput(int bits){

@@ -3,7 +3,7 @@ import mg.rivolink.ai.*;
 
 public class Main{
 	
-	static int[][] q={
+	static int[][] targets={
 		{1,0,0},{1,0,0},{1,0,0},{1,0,0},{1,0,0},{0,1,0},{0,1,0},{0,1,0},
 		{0,1,0},{0,1,0},{0,1,0},{0,1,0},{0,1,0},{0,1,0},{0,1,0},{0,1,0},
 		{1,0,0},{1,0,0},{1,0,0},{1,0,0},{0,0,1},{1,0,0},{1,0,0},{1,0,0},
@@ -18,9 +18,9 @@ public class Main{
 		Network network=new Network(6,4,3);
 		
 		for(int epoch=0;epoch<100;epoch++){
-			for(int xtrain=0;xtrain<q.length;xtrain++){
-				int[] ytrain=q[xtrain];
-				network.train(xtrain,ytrain);
+			for(int input=0;input<targets.length;input++){
+				int[] target=targets[input];
+				network.train(input,target);
 			}
 		}
 		
