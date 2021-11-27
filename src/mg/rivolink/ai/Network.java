@@ -27,7 +27,7 @@ public class Network{
 		training(target);
 	}
 
-	public void train(float... inputs,int[] target){
+	public void train(float[] inputs,int[] target){
 		setInput(inputs);
 		training(target);
 	}
