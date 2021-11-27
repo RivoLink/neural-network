@@ -1,1 +1,4 @@
 /bin
+
+# Ignore for release
+Main.java
