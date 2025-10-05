@@ -1,4 +1,5 @@
 /bin
+/build
 
 # Ignore for release
 Main.java
