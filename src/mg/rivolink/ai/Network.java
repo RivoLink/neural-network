@@ -163,7 +163,7 @@ public class Network {
             for (int i = 0; i < h1N.length; i++) {
                 h1N[i].biais += alpha * deltaH1[i];
                 for (int inp = 0; inp < inputSize; inp++) {
-                    h1N[i].weights[inp] += alpha * deltaH1[i] * h1N[0].inputs[inp];
+                    h1N[i].weights[inp] += alpha * deltaH1[i] * h1N[i].inputs[inp];
                 }
             }
         }
