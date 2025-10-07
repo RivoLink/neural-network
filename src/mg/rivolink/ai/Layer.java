@@ -2,38 +2,84 @@ package mg.rivolink.ai;
 
 public class Layer {
 
+    public final int inputSize;
     public final int neuronCount;
+
     public final Neuron[] neurons;
+    private final Neuron.Activation activation;
 
-    public Layer(int inputLength, int neuronCount) {
+    private float[] layerInputs;
+    private float[] cachedOutputs;
+
+    public Layer(int inputSize, int neuronCount) {
+        this(inputSize, neuronCount, Neuron.Activation.SIGMOID);
+    }
+
+    public Layer(int inputSize, int neuronCount, Neuron.Activation activation) {
+        this.inputSize = inputSize;
         this.neuronCount = neuronCount;
+        this.activation = activation;
+
         this.neurons = new Neuron[neuronCount];
+        this.cachedOutputs = new float[neuronCount];
 
         for (int i = 0; i < neuronCount; i++) {
-            neurons[i] = new Neuron(inputLength);
+            neurons[i] = new Neuron(inputSize);
         }
     }
 
-    public Layer setInputs(int bits) {
-        for (int i = 0; i < neuronCount; i++) {
-            neurons[i].setInput(bits);
+    public void setInputs(float[] inputs) {
+        if (inputs.length != inputSize) {
+            throw new IllegalArgumentException(
+                "Input size mismatch: expected " + inputSize + ", got " + inputs.length
+            );
         }
-        return this;
+        this.layerInputs = inputs;
     }
 
-    public Layer setInputs(float... inputs) {
+    public float[] forward() {
         for (int i = 0; i < neuronCount; i++) {
-            neurons[i].setInput(inputs);
+            cachedOutputs[i] = neurons[i].computeOutput(layerInputs, activation);
         }
-        return this;
+        return cachedOutputs;
     }
 
     public float[] getOutputs() {
-        float[] outputs = new float[neuronCount];
+        return cachedOutputs;
+    }
+
+    public Neuron.Activation getActivation() {
+        return activation;
+    }
+
+    public float[] getInputs() {
+        return layerInputs;
+    }
+
+    public float[] getLastZValues() {
+        float[] zValues = new float[neuronCount];
         for (int i = 0; i < neuronCount; i++) {
-            outputs[i] = neurons[i].getOutput();
+            zValues[i] = neurons[i].getLastZ();
         }
-        return outputs;
+        return zValues;
+    }
+
+    public void copyWeightsFrom(Layer other) {
+        if (this.neuronCount != other.neuronCount) {
+            throw new IllegalArgumentException("Layer sizes don't match");
+        }
+        for (int i = 0; i < neuronCount; i++) {
+            this.neurons[i].copyWeightsFrom(other.neurons[i]);
+        }
+    }
+
+    public void softUpdate(Layer other, float tau) {
+        if (this.neuronCount != other.neuronCount) {
+            throw new IllegalArgumentException("Layer sizes don't match");
+        }
+        for (int i = 0; i < neuronCount; i++) {
+            this.neurons[i].softUpdate(other.neurons[i], tau);
+        }
     }
 
 }
