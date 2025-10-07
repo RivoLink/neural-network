@@ -4,70 +4,168 @@ import java.util.Random;
 
 public class Neuron {
 
-    static final Random RANDOM = new Random();
+    static final Random r = new Random();
 
     public float bias;
-    public final float[] inputs;
-    public final float[] weights;
+
     public final int size;
+    public final float weights[];
+
+    private float lastZ;
+    private float lastOutput;
+
+    public enum Activation {
+        SIGMOID, RELU, LEAKY_RELU, TANH, LINEAR
+    }
 
     public Neuron(int size) {
         this.size = size;
-        this.inputs = new float[size];
         this.weights = new float[size];
+        initializeWeights();
+    }
 
-        bias = RANDOM.nextFloat();
+    // He initialization, better for ReLU
+    // value: [-1, 1] * sqrt(2/size)
+    private void initializeWeights() {
+        float scale = (float)Math.sqrt(2.0 / size);
+        bias = (r.nextFloat() * 2 - 1) * scale;
         for (int i = 0; i < size; i++) {
-            weights[i] = RANDOM.nextFloat();
+            weights[i] = (r.nextFloat() * 2 - 1) * scale;
         }
     }
 
-    public Neuron setInput(int bits) {
+    // Xavier initialization, better for sigmoid/tanh
+    // value: [-1, 1] * sqrt(1/size)
+    public void initializeXavier() {
+        float scale = (float)Math.sqrt(1.0 / size);
+        bias = (r.nextFloat() * 2 - 1) * scale;
         for (int i = 0; i < size; i++) {
-            inputs[size - (i + 1)] = (bits & (1 << i)) >> i;
+            weights[i] = (r.nextFloat() * 2 - 1) * scale;
         }
-        return this;
     }
 
-    public Neuron setInput(float... inputs) {
-        for (int i = 0; i < size; i++) {
-            this.inputs[i] = inputs[i];
-        }
-        return this;
+    public float getLastZ() {
+        return lastZ;
     }
 
-    public float getOutput() {
-        float z = dot(inputs, weights) + bias;
-        return sigmoid(z);
+    public float getLastOutput() {
+        return lastOutput;
+    }
+
+    public float computeOutput(float[] inputs, Activation activation) {
+        lastZ = dot(inputs, weights) + bias;
+        lastOutput = applyActivation(lastZ, activation);
+        return lastOutput;
+    }
+
+    private float applyActivation(float z, Activation activation) {
+        switch (activation) {
+            case RELU:
+                return relu(z);
+            case LEAKY_RELU:
+                return leakyRelu(z);
+            case TANH:
+                return tanh(z);
+            case LINEAR:
+                return z;
+            case SIGMOID:
+            default:
+                return sigmoid(z);
+        }
     }
 
     public static float sigmoid(float z) {
-        return (float) (1 / (1 + Math.exp(-z)));
+        z = Math.max(-88f, Math.min(88f, z));
+        return (float)(1.0 / (1.0 + Math.exp(-z)));
     }
 
-    public static float sigmoidPrime(float z) {
-        return sigmoid(z) * (1 - sigmoid(z));
+    public static float sigmoidDerivative(float z) {
+        float s = sigmoid(z);
+        return s * (1 - s);
     }
 
-    public static int[] toBits(int n) {
-        int size = Integer.toBinaryString(n).length();
-        int[] bits = new int[size];
-        for (int i = 0; i < size; i++) {
-            bits[size - (i + 1)] = (n & (1 << i)) >> i;
+    public static float relu(float z) {
+        return Math.max(0, z);
+    }
+
+    public static float reluDerivative(float z) {
+        return z > 0 ? 1 : 0;
+    }
+
+    public static float leakyRelu(float z) {
+        return z > 0 ? z : 0.01f * z;
+    }
+
+    public static float leakyReluDerivative(float z) {
+        return z > 0 ? 1 : 0.01f;
+    }
+
+    public static float tanh(float z) {
+        return (float)Math.tanh(z);
+    }
+
+    public static float tanhDerivative(float z) {
+        float t = tanh(z);
+        return 1 - t * t;
+    }
+
+    public static float linearDerivative(float z) {
+        return 1;
+    }
+
+    public static float getActivationDerivative(float z, Activation activation) {
+        switch (activation) {
+            case RELU:
+                return reluDerivative(z);
+            case LEAKY_RELU:
+                return leakyReluDerivative(z);
+            case TANH:
+                return tanhDerivative(z);
+            case LINEAR:
+                return linearDerivative(z);
+            case SIGMOID:
+            default:
+                return sigmoidDerivative(z);
         }
-        return bits;
     }
 
     public static float dot(float[] x, float[] w) {
         if (x.length != w.length) {
-            return 0;
+            throw new IllegalArgumentException("Array lengths must match");
         }
 
-        float dotProduct = 0;
+        float dot = 0;
         for (int i = 0; i < x.length; i++) {
-            dotProduct += x[i] * w[i];
+            dot += x[i] * w[i];
         }
-        return dotProduct;
+        return dot;
+    }
+
+    public void copyWeightsFrom(Neuron other) {
+        if (this.size != other.size) {
+            throw new IllegalArgumentException("Neuron sizes don't match");
+        }
+
+        this.bias = other.bias;
+        System.arraycopy(other.weights, 0, this.weights, 0, size);
+    }
+
+    public void softUpdate(Neuron other, float tau) {
+        this.bias = tau * other.bias + (1 - tau) * this.bias;
+        for (int i = 0; i < size; i++) {
+            this.weights[i] = tau * other.weights[i] + (1 - tau) * this.weights[i];
+        }
+    }
+
+    public void updateWeights(float[] gradients, float[] inputs, float learningRate, float maxGradient) {
+        float biasGrad = Math.max(-maxGradient, Math.min(maxGradient, gradients[0]));
+        bias += learningRate * biasGrad;
+
+        for (int i = 0; i < size; i++) {
+            float grad = gradients[i + 1] * inputs[i];
+            grad = Math.max(-maxGradient, Math.min(maxGradient, grad));
+            weights[i] += learningRate * grad;
+        }
     }
 
 }
