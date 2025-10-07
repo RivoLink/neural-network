@@ -73,6 +73,9 @@ public class Network{
 		Neuron[] hN=hidL.neurons;
 		Neuron[] oN=outL.neurons;
 
+		// Initial inputs are always the same
+		float[] inputs = hN[0].inputs;
+
 		float gE_wij,gE_wjk;
 		for(int j=0;j<hN.length;j++){
 			for(int k=0;k<oN.length;k++){
@@ -83,9 +86,9 @@ public class Network{
 
 			for(int i=0;i<this.i;i++){
 				gE_wij=0;
-				float xi=hidL.neurons[0].inputs[i];
+				float xi=inputs[i];
 				for(int k=0;k<oN.length;k++){
-					float wjk=outL.neurons[k].weights[j];
+					float wjk=oN[k].weights[j];
 					gE_wij+=(y[k]-yhat[k])*yhat[k]*(1-yhat[k])*wjk*x[j]*(1-x[j]);
 				}
 				gE_wij*=alpha;
