@@ -1,2 +1,6 @@
 /bin
 /build
+
+# custom
+*.rl
+/notes
