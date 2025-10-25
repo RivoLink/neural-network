@@ -162,9 +162,8 @@ public class Neuron {
         bias += learningRate * biasGrad;
 
         for (int i = 0; i < size; i++) {
-            float grad = gradients[i + 1] * inputs[i];
-            grad = Math.max(-maxGradient, Math.min(maxGradient, grad));
-            weights[i] += learningRate * grad;
+            float weightGrad = Math.max(-maxGradient, Math.min(maxGradient, gradients[i + 1] * inputs[i]));
+            weights[i] += learningRate * weightGrad;
         }
     }
 
