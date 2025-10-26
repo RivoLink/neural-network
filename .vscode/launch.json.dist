@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node-terminal",
+            "name": "Compile and Run",
+            "request": "launch",
+            "command": "javac -d bin -sourcepath src ${file} && java -cp bin $(echo '${relativeFileDirname}/${fileBasenameNoExtension}' | sed 's|src/||; s|/|.|g')",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Compile",
+            "request": "launch",
+            "command": "javac -d bin -sourcepath src ${file}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Compile All",
+            "request": "launch",
+            "command": "javac -d bin -sourcepath src src/mg/rivolink/**/*.java",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

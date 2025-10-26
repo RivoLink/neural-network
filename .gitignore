@@ -1,6 +1,10 @@
 /bin
 /build
 
+# vscode
+.vscode/*
+!.vscode/*.dist
+
 # custom
 *.rl
 /notes
