@@ -1,8 +1,11 @@
 package mg.rivolink.ai;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class Neuron {
+public class Neuron implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     static final Random r = new Random();
 

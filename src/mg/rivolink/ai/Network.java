@@ -1,6 +1,10 @@
 package mg.rivolink.ai;
 
-public class Network {
+import java.io.Serializable;
+
+public class Network implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public float tau = 0.01f;        // For soft updates in DQN
     public float alpha = 0.1f;       // Learning rate

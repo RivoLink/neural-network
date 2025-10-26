@@ -1,6 +1,10 @@
 package mg.rivolink.ai;
 
-public class Layer {
+import java.io.Serializable;
+
+public class Layer implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public final int inputSize;
     public final int neuronCount;
