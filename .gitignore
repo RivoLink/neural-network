@@ -8,3 +8,7 @@
 # custom
 *.rl
 /notes
+
+# models
+/models/*
+!/models/.gitkeep
