@@ -54,10 +54,10 @@ public class Network implements Serializable {
         }
     }
 
-    // Train with float target (regression - for DQN)
+    // Train with float target (classification with one-hot)
     public void train(float[] inputs, float[] target) {
         forward(inputs);
-        backpropagationMSE(target);
+        backpropagation(target);
     }
 
     // Train with int target (classification)
@@ -89,9 +89,9 @@ public class Network implements Serializable {
         }
     }
 
-    // Backpropagation with MSE loss
-    private void backpropagationMSE(float[] target) {
+    private void backpropagation(float[] target) {
         float[] yhat = outputLayer.getOutputs();
+        boolean isSoftmax = outputLayer.getActivation() == Neuron.Activation.SOFTMAX;
 
         if (hiddenLayer2 != null) {
             // 3-layer network
@@ -101,7 +101,6 @@ public class Network implements Serializable {
 
             float[] z1 = hiddenLayer1.getLastZValues();
             float[] z2 = hiddenLayer2.getLastZValues();
-
             float[] zOut = outputLayer.getLastZValues();
 
             Neuron[] h1N = hiddenLayer1.neurons;
@@ -109,14 +108,17 @@ public class Network implements Serializable {
             Neuron[] oN = outputLayer.neurons;
 
             // Output layer gradients
-            // MSE: delta = (yhat - target) * activation'(z)
             float[] deltaOut = new float[oN.length];
             for (int k = 0; k < oN.length; k++) {
-                float error = yhat[k] - target[k];
-                float derivative = Neuron.getActivationDerivative(
-                    zOut[k], outputLayer.getActivation()
-                );
-                deltaOut[k] = error * derivative;
+                if (isSoftmax) {
+                    // Softmax + Cross-Entropy: delta = yhat - target
+                    deltaOut[k] = yhat[k] - target[k];
+                } else {
+                    // MSE: delta = (yhat - target) * activation'(z)
+                    float error = yhat[k] - target[k];
+                    float derivative = Neuron.getActivationDerivative(zOut[k], outputLayer.getActivation());
+                    deltaOut[k] = error * derivative;
+                }
             }
 
             // Hidden layer 2 gradients
@@ -126,9 +128,7 @@ public class Network implements Serializable {
                 for (int k = 0; k < oN.length; k++) {
                     error += deltaOut[k] * oN[k].weights[j];
                 }
-                float derivative = Neuron.getActivationDerivative(
-                    z2[j], hiddenLayer2.getActivation()
-                );
+                float derivative = Neuron.getActivationDerivative(z2[j], hiddenLayer2.getActivation());
                 deltaH2[j] = error * derivative;
             }
 
@@ -139,9 +139,7 @@ public class Network implements Serializable {
                 for (int j = 0; j < h2N.length; j++) {
                     error += deltaH2[j] * h2N[j].weights[i];
                 }
-                float derivative = Neuron.getActivationDerivative(
-                    z1[i], hiddenLayer1.getActivation()
-                );
+                float derivative = Neuron.getActivationDerivative(z1[i], hiddenLayer1.getActivation());
                 deltaH1[i] = error * derivative;
             }
 
@@ -161,14 +159,17 @@ public class Network implements Serializable {
             Neuron[] oN = outputLayer.neurons;
 
             // Output layer gradients
-            // MSE: delta = (yhat - target) * activation'(z)
             float[] deltaOut = new float[oN.length];
             for (int k = 0; k < oN.length; k++) {
-                float error = yhat[k] - target[k];
-                float derivative = Neuron.getActivationDerivative(
-                    zOut[k], outputLayer.getActivation()
-                );
-                deltaOut[k] = error * derivative;
+                if (isSoftmax) {
+                    // Softmax + Cross-Entropy: delta = yhat - target
+                    deltaOut[k] = yhat[k] - target[k];
+                } else {
+                    // MSE: delta = (yhat - target) * activation'(z)
+                    float error = yhat[k] - target[k];
+                    float derivative = Neuron.getActivationDerivative(zOut[k], outputLayer.getActivation());
+                    deltaOut[k] = error * derivative;
+                }
             }
 
             // Hidden layer 1 gradients
@@ -178,9 +179,7 @@ public class Network implements Serializable {
                 for (int k = 0; k < oN.length; k++) {
                     error += deltaOut[k] * oN[k].weights[i];
                 }
-                float derivative = Neuron.getActivationDerivative(
-                    z1[i], hiddenLayer1.getActivation()
-                );
+                float derivative = Neuron.getActivationDerivative(z1[i], hiddenLayer1.getActivation());
                 deltaH1[i] = error * derivative;
             }
 

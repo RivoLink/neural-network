@@ -18,7 +18,7 @@ public class Neuron implements Serializable {
     private float lastOutput;
 
     public enum Activation {
-        SIGMOID, RELU, LEAKY_RELU, TANH, LINEAR
+        SIGMOID, RELU, LEAKY_RELU, TANH, LINEAR, SOFTMAX
     }
 
     public Neuron(int size) {
@@ -37,7 +37,7 @@ public class Neuron implements Serializable {
         }
     }
 
-    // Xavier initialization, better for sigmoid/tanh
+    // Xavier initialization, better for sigmoid/tanh/softmax
     // value: [-1, 1] * sqrt(1/size)
     public void initializeXavier() {
         float scale = (float)Math.sqrt(1.0 / size);
@@ -71,6 +71,8 @@ public class Neuron implements Serializable {
                 return tanh(z);
             case LINEAR:
                 return z;
+            case SOFTMAX:
+                return z; // Handled at layer level
             case SIGMOID:
             default:
                 return sigmoid(z);
@@ -126,6 +128,8 @@ public class Neuron implements Serializable {
                 return tanhDerivative(z);
             case LINEAR:
                 return linearDerivative(z);
+            case SOFTMAX:
+                return 1; // Handled at layer level
             case SIGMOID:
             default:
                 return sigmoidDerivative(z);
