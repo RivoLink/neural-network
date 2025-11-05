@@ -31,6 +31,12 @@ public class Layer implements Serializable {
 
         for (int i = 0; i < neuronCount; i++) {
             neurons[i] = new Neuron(inputSize);
+            
+            if (activation == Neuron.Activation.SIGMOID || 
+                activation == Neuron.Activation.TANH || 
+                activation == Neuron.Activation.SOFTMAX) {
+                neurons[i].initializeXavier();
+            }
         }
     }
 
@@ -48,7 +54,31 @@ public class Layer implements Serializable {
             cachedOutputs[i] = neurons[i].computeOutput(layerInputs, activation);
             cachedZValues[i] = neurons[i].getLastZ();
         }
+
+        if (activation == Neuron.Activation.SOFTMAX) {
+            applySoftmax(cachedOutputs);
+        }
+
         return cachedOutputs;
+    }
+
+    private void applySoftmax(float[] outputs) {
+        float max = outputs[0];
+        for (int i = 1; i < outputs.length; i++) {
+            if (outputs[i] > max) {
+                max = outputs[i];
+            }
+        }
+
+        float sum = 0;
+        for (int i = 0; i < outputs.length; i++) {
+            outputs[i] = (float)Math.exp(outputs[i] - max);
+            sum += outputs[i];
+        }
+
+        for (int i = 0; i < outputs.length; i++) {
+            outputs[i] /= sum;
+        }
     }
 
     public float[] getOutputs() {
