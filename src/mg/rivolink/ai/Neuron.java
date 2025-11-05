@@ -160,13 +160,15 @@ public class Neuron implements Serializable {
         }
     }
 
+    // Gradient descent
+    // b -= lr * delta, w -= lr * (delta * input)
     public void updateWeights(float[] gradients, float[] inputs, float learningRate, float maxGradient) {
         float biasGrad = Math.max(-maxGradient, Math.min(maxGradient, gradients[0]));
-        bias += learningRate * biasGrad;
+        bias -= learningRate * biasGrad;
 
         for (int i = 0; i < size; i++) {
             float weightGrad = Math.max(-maxGradient, Math.min(maxGradient, gradients[i + 1] * inputs[i]));
-            weights[i] += learningRate * weightGrad;
+            weights[i] -= learningRate * weightGrad;
         }
     }
 

@@ -109,9 +109,10 @@ public class Network implements Serializable {
             Neuron[] oN = outputLayer.neurons;
 
             // Output layer gradients
+            // MSE: delta = (yhat - target) * activation'(z)
             float[] deltaOut = new float[oN.length];
             for (int k = 0; k < oN.length; k++) {
-                float error = target[k] - yhat[k];
+                float error = yhat[k] - target[k];
                 float derivative = Neuron.getActivationDerivative(
                     zOut[k], outputLayer.getActivation()
                 );
@@ -144,7 +145,7 @@ public class Network implements Serializable {
                 deltaH1[i] = error * derivative;
             }
 
-            // Update layers with gradient clipping
+            // Update layers with gradient descent
             updateLayerWeights(outputLayer, deltaOut, h2, alpha, maxGradient);
             updateLayerWeights(hiddenLayer2, deltaH2, h1, alpha, maxGradient);
             updateLayerWeights(hiddenLayer1, deltaH1, h1Input, alpha, maxGradient);
@@ -160,9 +161,10 @@ public class Network implements Serializable {
             Neuron[] oN = outputLayer.neurons;
 
             // Output layer gradients
+            // MSE: delta = (yhat - target) * activation'(z)
             float[] deltaOut = new float[oN.length];
             for (int k = 0; k < oN.length; k++) {
-                float error = target[k] - yhat[k];
+                float error = yhat[k] - target[k];
                 float derivative = Neuron.getActivationDerivative(
                     zOut[k], outputLayer.getActivation()
                 );
@@ -182,20 +184,22 @@ public class Network implements Serializable {
                 deltaH1[i] = error * derivative;
             }
 
-            // Update layers with gradient clipping
+            // Update layers with gradient descent
             updateLayerWeights(outputLayer, deltaOut, h1, alpha, maxGradient);
             updateLayerWeights(hiddenLayer1, deltaH1, h1Input, alpha, maxGradient);
         }
     }
 
+    // Gradient descent
+    // b -= lr * delta, w -= lr * (delta * input)
     private void updateLayerWeights(Layer layer, float[] deltas, float[] inputs, float lr, float maxGrad) {
         for (int i = 0; i < layer.neuronCount; i++) {
             float biasGrad = Math.max(-maxGrad, Math.min(maxGrad, deltas[i]));
-            layer.neurons[i].bias += lr * biasGrad;
+            layer.neurons[i].bias -= lr * biasGrad;
 
             for (int j = 0; j < layer.inputSize; j++) {
                 float weightGrad = Math.max(-maxGrad, Math.min(maxGrad, deltas[i] * inputs[j]));
-                layer.neurons[i].weights[j] += lr * weightGrad;
+                layer.neurons[i].weights[j] -= lr * weightGrad;
             }
         }
     }
