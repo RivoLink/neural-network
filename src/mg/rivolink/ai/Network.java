@@ -1,6 +1,7 @@
 package mg.rivolink.ai;
 
 import java.io.Serializable;
+import mg.rivolink.ai.Neuron.Activation;
 
 public class Network implements Serializable {
 
@@ -8,25 +9,33 @@ public class Network implements Serializable {
 
     public float tau = 0.01f;        // For soft updates in DQN
     public float alpha = 0.1f;       // Learning rate
-    public float maxGradient = 1.0f; // For gradient clipping
+    public float maxGradient = 5.0f; // For gradient clipping (increased from 1.0)
 
     public final int inputSize;
     public final Layer hiddenLayer1;
     public final Layer hiddenLayer2;
     public final Layer outputLayer;
 
-    public Network(int inputSize, int hidden1Size, int hidden2Size, int outputSize) {
+    public Network(int inputSize, int hidden1Size, int hidden2Size, int outputSize, Activation outputActivation) {
         this.inputSize = inputSize;
-        this.hiddenLayer1 = new Layer(inputSize, hidden1Size, Neuron.Activation.RELU);
-        this.hiddenLayer2 = new Layer(hidden1Size, hidden2Size, Neuron.Activation.RELU);
-        this.outputLayer = new Layer(hidden2Size, outputSize, Neuron.Activation.LINEAR);
+        this.hiddenLayer1 = new Layer(inputSize, hidden1Size, Activation.RELU);
+        this.hiddenLayer2 = new Layer(hidden1Size, hidden2Size, Activation.RELU);
+        this.outputLayer = new Layer(hidden2Size, outputSize, outputActivation);
+    }
+
+    public Network(int inputSize, int hidden1Size, int hidden2Size, int outputSize) {
+        this(inputSize, hidden1Size, hidden2Size, outputSize, Activation.LINEAR);
+    }
+
+    public Network(int inputSize, int hiddenSize, int outputSize, Activation outputActivation) {
+        this.inputSize = inputSize;
+        this.hiddenLayer1 = new Layer(inputSize, hiddenSize, Activation.RELU);
+        this.hiddenLayer2 = null;
+        this.outputLayer = new Layer(hiddenSize, outputSize, outputActivation);
     }
 
     public Network(int inputSize, int hiddenSize, int outputSize) {
-        this.inputSize = inputSize;
-        this.hiddenLayer1 = new Layer(inputSize, hiddenSize, Neuron.Activation.SIGMOID);
-        this.hiddenLayer2 = null;
-        this.outputLayer = new Layer(hiddenSize, outputSize, Neuron.Activation.SIGMOID);
+        this(inputSize, hiddenSize, outputSize, Activation.SIGMOID);
     }
 
     public float[] predict(float[] inputs) {
@@ -91,7 +100,7 @@ public class Network implements Serializable {
 
     private void backpropagation(float[] target) {
         float[] yhat = outputLayer.getOutputs();
-        boolean isSoftmax = outputLayer.getActivation() == Neuron.Activation.SOFTMAX;
+        boolean isSoftmax = outputLayer.getActivation() == Activation.SOFTMAX;
 
         if (hiddenLayer2 != null) {
             // 3-layer network
@@ -256,6 +265,7 @@ public class Network implements Serializable {
         private int hidden1Size;
         private int hidden2Size = -1;
         private int outputSize;
+        private Activation outputActivation = Activation.SIGMOID;
 
         private float tau = 0.01f;
         private float learningRate = 0.1f;
@@ -285,6 +295,11 @@ public class Network implements Serializable {
             return this;
         }
 
+        public Builder outputActivation(Activation activation) {
+            this.outputActivation = activation;
+            return this;
+        }
+
         public Builder learningRate(float rate) {
             this.learningRate = rate;
             return this;
@@ -304,9 +319,9 @@ public class Network implements Serializable {
             Network network;
 
             if (hidden2Size > 0) {
-                network = new Network(inputSize, hidden1Size, hidden2Size, outputSize);
+                network = new Network(inputSize, hidden1Size, hidden2Size, outputSize, outputActivation);
             } else {
-                network = new Network(inputSize, hidden1Size, outputSize);
+                network = new Network(inputSize, hidden1Size, outputSize, outputActivation);
             }
 
             network.tau = tau;

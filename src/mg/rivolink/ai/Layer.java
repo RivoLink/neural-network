@@ -1,6 +1,7 @@
 package mg.rivolink.ai;
 
 import java.io.Serializable;
+import mg.rivolink.ai.Neuron.Activation;
 
 public class Layer implements Serializable {
 
@@ -10,17 +11,17 @@ public class Layer implements Serializable {
     public final int neuronCount;
 
     public final Neuron[] neurons;
-    private final Neuron.Activation activation;
+    private final Activation activation;
 
     private float[] layerInputs;
     private float[] cachedOutputs;
     private float[] cachedZValues;
 
     public Layer(int inputSize, int neuronCount) {
-        this(inputSize, neuronCount, Neuron.Activation.SIGMOID);
+        this(inputSize, neuronCount, Activation.SIGMOID);
     }
 
-    public Layer(int inputSize, int neuronCount, Neuron.Activation activation) {
+    public Layer(int inputSize, int neuronCount, Activation activation) {
         this.inputSize = inputSize;
         this.neuronCount = neuronCount;
         this.activation = activation;
@@ -32,9 +33,9 @@ public class Layer implements Serializable {
         for (int i = 0; i < neuronCount; i++) {
             neurons[i] = new Neuron(inputSize);
             
-            if (activation == Neuron.Activation.SIGMOID || 
-                activation == Neuron.Activation.TANH || 
-                activation == Neuron.Activation.SOFTMAX) {
+            if (activation == Activation.SIGMOID || 
+                activation == Activation.TANH || 
+                activation == Activation.SOFTMAX) {
                 neurons[i].initializeXavier();
             }
         }
@@ -55,7 +56,7 @@ public class Layer implements Serializable {
             cachedZValues[i] = neurons[i].getLastZ();
         }
 
-        if (activation == Neuron.Activation.SOFTMAX) {
+        if (activation == Activation.SOFTMAX) {
             applySoftmax(cachedOutputs);
         }
 
@@ -89,7 +90,7 @@ public class Layer implements Serializable {
         return cachedZValues;
     }
 
-    public Neuron.Activation getActivation() {
+    public Activation getActivation() {
         return activation;
     }
 
