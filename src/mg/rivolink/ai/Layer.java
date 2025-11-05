@@ -14,6 +14,7 @@ public class Layer implements Serializable {
 
     private float[] layerInputs;
     private float[] cachedOutputs;
+    private float[] cachedZValues;
 
     public Layer(int inputSize, int neuronCount) {
         this(inputSize, neuronCount, Neuron.Activation.SIGMOID);
@@ -26,6 +27,7 @@ public class Layer implements Serializable {
 
         this.neurons = new Neuron[neuronCount];
         this.cachedOutputs = new float[neuronCount];
+        this.cachedZValues = new float[neuronCount];
 
         for (int i = 0; i < neuronCount; i++) {
             neurons[i] = new Neuron(inputSize);
@@ -44,6 +46,7 @@ public class Layer implements Serializable {
     public float[] forward() {
         for (int i = 0; i < neuronCount; i++) {
             cachedOutputs[i] = neurons[i].computeOutput(layerInputs, activation);
+            cachedZValues[i] = neurons[i].getLastZ();
         }
         return cachedOutputs;
     }
@@ -52,20 +55,16 @@ public class Layer implements Serializable {
         return cachedOutputs;
     }
 
+    public float[] getLastZValues() {
+        return cachedZValues;
+    }
+
     public Neuron.Activation getActivation() {
         return activation;
     }
 
     public float[] getInputs() {
         return layerInputs;
-    }
-
-    public float[] getLastZValues() {
-        float[] zValues = new float[neuronCount];
-        for (int i = 0; i < neuronCount; i++) {
-            zValues[i] = neurons[i].getLastZ();
-        }
-        return zValues;
     }
 
     public void copyWeightsFrom(Layer other) {
